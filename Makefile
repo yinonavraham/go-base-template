@@ -7,7 +7,7 @@ SHELL := /bin/bash
 # When using JFrog Artifactory and the JFrog CLI, use the Go repository URL as configured for the JFrog CLI.
 # If you want to use the default / globally configured GOPROXY - simply comment the export statement below.
 # (getting first line and first "column" in case jfrog cli returns more than just the GOPROXY value... (it happens...) )
-export GOPROXY := $(eval GOPROXY := $(shell jfrog rt go env GOPROXY 2>&1 | grep -o "http.*" | head -1 | cut -d' ' -f1))$(GOPROXY)
+#export GOPROXY := $(eval GOPROXY := $(shell jfrog rt go env GOPROXY 2>&1 | grep -o "http.*" | head -1 | cut -d' ' -f1))$(GOPROXY)
 
 # Eagerly evaluates the GOOS & GOARCH variables
 export GOOS := $(eval GOOS := $(shell go env GOOS 2>&1))$(GOOS)
@@ -39,7 +39,7 @@ APP_IMAGE_TAG_DEV := "${BINARY_BASE_NAME}:dev"
 # SRC_FILES -
 # Collect all the source files - used by make to detect changes (for incremental builds).
 # Adjust the `find` command below based on your specific needs
-SRC_FILES := $(shell find internal/*)
+SRC_FILES := $(shell find . -name '*.go')
 
 # ----------------------------------------------------- TARGETS -----------------------------------------------------
 # Notes:
@@ -51,10 +51,10 @@ SRC_FILES := $(shell find internal/*)
 out:
 	mkdir out
 
-out/${BINARY_BASE_NAME}-darwin-amd64: out go.mod ${APP_MAIN_SRC_FILE} ${INTERNAL_SRC_FILES}
+out/${BINARY_BASE_NAME}-darwin-amd64: out go.mod ${APP_MAIN_SRC_FILE} ${SRC_FILES}
 	GOOS=darwin GOARCH=amd64 ${GOCMD} build -o out/${BINARY_BASE_NAME}-darwin-amd64 ${APP_MAIN_SRC_FILE}
 
-out/${BINARY_BASE_NAME}-linux-amd64: out go.mod ${APP_MAIN_SRC_FILE} ${INTERNAL_SRC_FILES}
+out/${BINARY_BASE_NAME}-linux-amd64: out go.mod ${APP_MAIN_SRC_FILE} ${SRC_FILES}
 	# https://medium.com/@diogok/on-golang-static-binaries-cross-compiling-and-plugins-1aed33499671
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 ${GOCMD} build -o out/${BINARY_BASE_NAME}-linux-amd64 -ldflags '-w -extldflags "-static"' ${APP_MAIN_SRC_FILE}
 
@@ -121,7 +121,7 @@ help: Makefile
 	@printf "\
 	Usage: make <goal>... [<variable>...] \n\
 	\n\
-	Makefile of ${APP_NAME} \n\
+	Makefile of "${APP_NAME}" \n\
 	\n\
 	Goals:\n"
 	@sed -n 's/^## //p' $<
