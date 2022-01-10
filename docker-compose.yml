@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  app:
+    container_name: app
+    # image needs to be aligned with the APP_IMAGE_TAG_DEV variable in the Makefile
+    image: myapp:dev
+    restart: always
+    ports: [ "8080:8080" ]
